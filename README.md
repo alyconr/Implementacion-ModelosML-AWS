@@ -9,7 +9,7 @@ Este repositorio contiene la Implementación, publicación, uso y eleminacón de
 
 1.  [Preparación de Datos para Validación Cruzada ](#preparación-de-datos-para-validación-cruzada)
     
-2.  [Validación cruzada e hiperparametrización de un modelo de Regresión Lineal en Amazon SageMaker](#validación-cruzada-e-hiperparametrización-de-regresión-lineal)
+2.  [Validación cruzada e hiperparametrización de un modelo de Regresión Lineal](#validación-cruzada-e-hiperparametrización-de-regresión-lineal)
 3.  [Registro de Modelos](#registro-del-modelos)
 4.  [Publicación Deployment](#publicación-*deployment)
 5.  [Uso del Modelo](#uso-del-modelo)
@@ -248,7 +248,7 @@ generar_dataset_validacion_cruzada(
 )
 ```
 
-# 2. Validación cruzada e hiperparametrización de un modelo de Regresión Lineal en Amazon SageMaker
+# 2. Validación cruzada e hiperparametrización de un modelo de Regresión Lineal
 
 Inicialmente se deben entrenar cada uno de los conjuntos de datasets generados, para nuestro caso de sebe realizar el entrenamiento por separado para cada uno de los 5 conjuntos de data frames. Con la anterior se determian cual modelo tiene el menor MSE.
 
