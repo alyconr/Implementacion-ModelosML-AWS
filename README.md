@@ -74,7 +74,7 @@ Se calcula el número total de registros y se divide en 5 partes iguales para la
 #Utilitarios de Spark
 import pyspark.sql.functions as f
 
-#Agregamos una columna que indique el �ndice de la fila
+#Agregamos una columna que indique el indice de la fila
 dfIndice = dfDataset.withColumn("indice_fila", f.monotonically_increasing_id())
 
 #Para solucionar lo anterior usaremos el utilitario "Window"
@@ -83,17 +83,17 @@ dfIndice = dfDataset.withColumn("indice_fila", f.monotonically_increasing_id())
 from pyspark.sql.window import Window
 
 #Agregamos la columna "indice_fila_2"
-#Usamos nuevamente la funci�n "row_number" para agregar el �ndice
-#Pero esta vez se generar� en orden, ya que estamos usando el Window.orderBy
+#Usamos nuevamente la función "row_number" para agregar el indice
+#Pero esta vez se generan en orden, ya que estamos usando el Window.orderBy
 dfIndice = dfIndice.withColumn(
     "indice_fila_2", 
     f.row_number().over(Window.orderBy("indice_fila"))
 )
 
-#Obtenemos el n�mero total de registros
+#Obtenemos el número total de registros
 numeroDeRegistros = dfIndice.count()
 
-#Calculamos cu�ntos registros representan el 20%
+#Calculamos cuántos registros representan el 20%
 cantidadDeRegistrosValidacion = int(numeroDeRegistros/5)
 ```
 
