@@ -1,9 +1,10 @@
 # Implementacion ModelosML validación cruzada en AWS
-Implementación, publicación, uso y eleminacón de Modelos de Machine learning mediante validación cruzada en Infraestructura AWS
-Contenido
----------
 
-Este repositorio contiene la implementación de modelos de machine learning utilizando validación cruzada en AWS. Se enfoca en 5 aspectos principales:
+
+Este repositorio contiene la Implementación, publicación, uso y eleminacón de Modelos de Machine learning mediante validación cruzada en Infraestructura AWS
+
+---------.
+## Contenido
 
 1.  [Preparación de datos para validación cruzada usando Apache Spark en Amazon Athena](#preparación-de-datos-para-validación-cruzada)
     
