@@ -16,7 +16,7 @@ Este repositorio contiene la Implementación, publicación, uso y eleminacón de
 6.  [Uso del Modelo de Forma Remota](#uso-del-modelo-de-forma-remota)
     
 
-#  1. Preparación de Datos para Validación Cruzada
+#  1. Preparación de Datos para Validación Cruzada <a name="preparación-de-datos-para-validación-cruzada"></a>
 ## Entorno y Configuración
 
 Se utiliza un Notebook PySpark en Amazon Athena.
