@@ -7,7 +7,7 @@ Este repositorio contiene la Implementación, publicación, uso y eleminacón de
 ---------.
 # Contenido
 
-1.  [Preparación de datos para validación cruzada usando Apache Spark en Amazon Athena](#preparación-de-datos-para-validación-cruzada)
+1.  [Preparación de Datos para Validación Cruzada ](#preparación-de-datos-para-validación-cruzada)
     
 2.  [Validación cruzada e hiperparametrización de un modelo de Regresión Lineal en Amazon SageMaker](#validación-cruzada-e-hiperparametrización-de-regresión-lineal)
 3.  [Registro de Modelos](#registro-del-modelos)
