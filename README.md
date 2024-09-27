@@ -3,7 +3,7 @@
 
 <div align="center">
 
-<img src="Assets/MLDIAGRAM.png" alt="logo" width="140" height="auto" style="border-radius:50%"   />
+<img src="Assets/MLDIAGRAM.png" alt="logo" width="800" height="auto" style="border-radius:50%"   />
 
 </div>
 
