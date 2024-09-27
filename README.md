@@ -242,6 +242,93 @@ generar_dataset_validacion_cruzada(
 )
 ```
 
+# 2.Validación Cruzada e Hiperparametrización de Regresión Lineal
+## Configuración del Entorno
+
+Se utiliza Amazon SageMaker para el entrenamiento y la hiperparametrización.
+Se importan las librerías necesarias de SageMaker.
+
+## Lectura de Datos
+
+Se utilizan TrainingInput para leer los datos de entrenamiento y validación desde S3.
+
+## Configuración del Algoritmo
+
+Se utiliza el algoritmo "linear-learner" de SageMaker.
+Se configura un Estimator con los parámetros básicos del modelo.
+
+## Definición de Hiperparámetros
+
+Se definen rangos para los hiperparámetros:
+
+learning_rate: [0.0001, 0.001, 0.01, 0.1]
+l1: [0.001, 0.01, 0.1]
+
+
+Se utiliza HyperparameterTuner para configurar la búsqueda de hiperparámetros.
+
+## Entrenamiento del Modelo
+
+Se ejecuta la malla de hiperparámetros con mallaDeHyperParametros.fit().
+Se entrenan múltiples modelos con diferentes combinaciones de hiperparámetros.
+
+## Selección del Mejor Modelo
+
+Se obtiene el mejor modelo basado en la métrica de validación (MSE).
+Se extraen las métricas y los hiperparámetros del mejor modelo.
+
+```python
+# Agregar índice a los datos
+dfIndice = dfDataset.withColumn("indice_fila", f.monotonically_increasing_id())
+
+# Crear índice ordenado
+dfIndice = dfIndice.withColumn(
+    "indice_fila_2", 
+    f.row_number().over(Window.orderBy("indice_fila"))
+)
+
+# Dividir datos en 5 partes
+cantidadDeRegistrosValidacion = int(numeroDeRegistros/5)
+
+# Crear DataFrames para cada fold
+df1 = dfIndice.filter(
+    (dfIndice["indice_fila_2"] >= 0) &
+    (dfIndice["indice_fila_2"] < cantidadDeRegistrosValidacion)
+).drop("indice_fila").drop("indice_fila_2")
+
+# ... (repetir para df2, df3, df4, df5)
+```
+### Hiperparametrizción
+
+```pyhton
+# Definir hiperparámetros
+hyperparametros = {
+    "learning_rate": CategoricalParameter([0.0001, 0.001, 0.01, 0.1]),
+    "l1": CategoricalParameter([0.001, 0.01, 0.1])
+}
+
+# Configurar malla de hiperparámetros
+mallaDeHyperParametros = HyperparameterTuner(
+    entrenador,
+    "validation:mse",
+    hyperparametros,
+    objective_type = "Minimize",
+    max_jobs = 12,
+    max_parallel_jobs = 10
+)
+
+# Entrenar modelos
+mallaDeHyperParametros.fit(inputs = {"train": dataTrain, "validation": dataTest})
+
+# Obtener mejor modelo
+nombreDelMejorModelo = mallaDeHyperParametros.best_training_job()
+
+# Extraer métricas y hiperparámetros
+descripcionDeEntrenamiento = sagemakerCliente.describe_training_job(TrainingJobName = nombreDelMejorModelo)
+metricas = descripcionDeEntrenamiento["FinalMetricDataList"]
+hiperparametros = descripcionDeEntrenamiento["HyperParameters"]
+```
+
 
    
 
