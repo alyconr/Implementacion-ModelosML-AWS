@@ -2,6 +2,7 @@
 
 
 Este repositorio contiene la Implementación, publicación, uso y eleminacón de Modelos de Machine learning mediante validación cruzada en Infraestructura AWS
+![Diagrama de flujo del proceso de preparación de datos, validación cruzada, regresión lineal, hiperparametrización, registro, despliegue y uso del modelo](https://1drv.ms/i/c/dabbb9396f2a0e51/EfMo1q_o8zVEpD7xwYVCk1QBzovoWbd8izMK-tX_TM_NQw?e=fyDbrc)
 
 ---------.
 # Contenido
