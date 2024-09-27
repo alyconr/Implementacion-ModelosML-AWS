@@ -1,8 +1,11 @@
 # Implementacion ModelosML validación cruzada en AWS
 
 
-Este repositorio contiene la Implementación, publicación, uso y eleminacón de Modelos de Machine learning mediante validación cruzada en Infraestructura AWS
-![Diagrama de flujo del proceso de preparación de datos, validación cruzada, regresión lineal, hiperparametrización, registro, despliegue y uso del modelo](Assets/MLDIAGRAM.png)
+<div align="center">
+
+<img src="Assets/MLDIAGRAM.png" alt="logo" width="140" height="auto" style="border-radius:50%"   />
+
+</div>
 
 ---------.
 # Contenido
