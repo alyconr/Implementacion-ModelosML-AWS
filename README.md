@@ -244,6 +244,65 @@ generar_dataset_validacion_cruzada(
 ```
 
 # 2.Validación Cruzada e Hiperparametrización de Regresión Lineal
+
+Inicialmente se deben entrenar cada uno de los conjuntos de datasets generados, para nuestro caso de sebe realizar el entrenamiento por separado para cada uno de los 5 conjuntos de data frames. Con la anterior se determian cual modelo tiene el menor MSE.
+
+```python
+#Utilitario para leer archivos de datos
+from sagemaker.inputs import TrainingInput
+
+#Bucket en donde se encuentran los archivos
+#IMPORTANTE: REEMPLAZAR "XXX" POR TUS INICIALES
+bucket = "datasetsbdajac"
+
+#Lectura de datos de entrenamiento
+dataTrain = TrainingInput(
+    f"s3://{bucket}/data/insurance_dataset_validacion_cruzada/vc1/train/", #Ruta del archivo
+    content_type = "text/csv", #Formato del archivo
+    distribution = "FullyReplicated", #El archivo será copiado en todos los servidores
+    s3_data_type = "S3Prefix", #Desde donde se lee el archivo (S3)
+    input_mode = "File", #Los registros se encuentran dentro de archivos
+    record_wrapping = "None" #Envoltorio de optimización
+)
+
+#Lectura de datos de validación
+dataTest = TrainingInput(
+    f"s3://{bucket}/data/insurance_dataset_validacion_cruzada/vc1/test/", #Ruta del archivo
+    content_type = "text/csv", #Formato del archivo
+    distribution = "FullyReplicated", #El archivo será copiado en todos los servidores
+    s3_data_type = "S3Prefix", #Desde donde se lee el archivo (S3)
+    input_mode = "File", #Los registros se encuentran dentro de archivos
+    record_wrapping = "None" #Envoltorio de optimización
+)
+
+#Importamos el utilitario para definir el entrenador del algoritmo
+from sagemaker.estimator import Estimator
+
+#Definimos el entrenador del algoritmo
+entrenador = Estimator(
+    image_uri = sagemaker.image_uris.retrieve("linear-learner", region), #Descargamos la implementación del algoritmo desde la región donde trabajamos
+    role = rol, #Rol que ejecuta servicios sobre AWS
+    instance_count = 1, #Cantidad de servidores de entrenamiento
+    instance_type = "ml.m5.large", #Tipo de servidor de entrenamiento
+    predictor_type = "regressor", #Tipo de predicción del algoritmo
+    sagemaker_session = sesion, #Sesión de SageMaker
+    base_job_name = "entrenamiento-prediccion-numerica-vc1" #Nombre del job de entrenamiento
+)
+
+#Configuramos los parametros del algoritmo
+entrenador.set_hyperparameters(
+    feature_dim = 11, #Cantidad de features
+    predictor_type = "regressor", #Indicamos que tipo de predicción es
+    normalize_data = "true", #Normalizamos los features
+    normalize_label = "true" #Normalizamos el label
+)
+
+#Entrenamos y validamos el modelo
+#MIENTRAS SE ENTRENA EL MODELO: En SageMaker, en la sección "Jobs", en la opción "Training" podemos ver cómo el modelo se entrena
+#TIEMPO DE ENTRENAMIENTO: 5 MINUTOS
+entrenador.fit({"train": dataTrain, "validation": dataTest})
+```
+
 ## Configuración del Entorno
 
 Se utiliza Amazon SageMaker para el entrenamiento y la hiperparametrización.
