@@ -9,6 +9,10 @@ Este repositorio contiene la Implementación, publicación, uso y eleminacón de
 1.  [Preparación de datos para validación cruzada usando Apache Spark en Amazon Athena](#preparación-de-datos-para-validación-cruzada)
     
 2.  [Validación cruzada e hiperparametrización de un modelo de Regresión Lineal en Amazon SageMaker](#validación-cruzada-e-hiperparametrización-de-regresión-lineal)
+3.  [Registro de Modelos](#registro-del-modelos)
+4.  [Publicación Deployment](#publicación-*deployment)
+5.  [Uso del Modelo](#uso-del-modelo)
+6.  [Uso del Modelo de Forma Remota](#uso-del-modelo-de-forma-remota)
     
 
 #  1. Preparación de Datos para Validación Cruzada
@@ -243,7 +247,7 @@ generar_dataset_validacion_cruzada(
 )
 ```
 
-# 2.Validación Cruzada e Hiperparametrización de Regresión Lineal
+# 2. Validación cruzada e hiperparametrización de un modelo de Regresión Lineal en Amazon SageMaker
 
 Inicialmente se deben entrenar cada uno de los conjuntos de datasets generados, para nuestro caso de sebe realizar el entrenamiento por separado para cada uno de los 5 conjuntos de data frames. Con la anterior se determian cual modelo tiene el menor MSE.
 
@@ -488,7 +492,198 @@ print(descripcionDeEntrenamiento["HyperParameters"]["learning_rate"])
 print(descripcionDeEntrenamiento["HyperParameters"]["l1"])
 ```
 
-   
+# 3. Registro de Modelos
+
+Este proceso permite guardar y versionar el modelo entrenado, facilitando su gestión y despliegue en el futuro. El registro del modelo incluye metadatos importantes como los tipos de datos aceptados y los requisitos de infraestructura, lo que facilita su uso y mantenimiento en un entorno de producción.
+
+```python
+#Registramos el modelo
+registroDelModelo = modelo.register(
+    model_package_group_name = nombreDelModelo,
+    content_types = tiposDeRegistrosInput, #Tipo de registros INPUT del modelo
+    response_types = tiposDeRegistrosOutput, #Tipo de registros OUTPUT del modelo
+    inference_instances = tipoDeInstanciasDeEjecucion, #Tipo de servidor en donde se colocará el modelo
+    transform_instances = tipoDeInstanciasDeEjecucion #Tipo de servidor en donde el modelo realizará cálculos intermedios
+)
+```
+# 4. Publicacion Deployment
+
+Este proceso permite desplegar el modelo entrenado como un servicio web accesible a través de un endpoint. Esto facilita la integración del modelo en aplicaciones y sistemas que necesiten realizar predicciones en tiempo real.
+Puntos importantes a destacar:
+
+El despliegue del modelo puede tomar varios minutos (aproximadamente 5 minutos según el comentario en el código).
+Se utiliza una instancia ml.m5.large para el despliegue, lo cual es adecuado para cargas de trabajo moderadas.
+El modelo se despliega inicialmente con una sola instancia, pero esto puede escalarse según las necesidades.
+El endpoint creado proporciona un punto de acceso para realizar predicciones utilizando el modelo desplegado.
+
+
+
+```python
+#Definimos el nombre del entrenamiento al que nos conectamos
+nombreDeEntrenamiento = "XXXXXXXXXXXXXXXXXXXXXXX"
+
+#Definimos el algoritmo que usamos para entrenar el modelo
+algoritmo = "linear-learner"
+
+#Nos conectamos al servicio de SageMaker
+sagemakerCliente = boto3.client("sagemaker")
+
+#Obtenemos la descripción del entrenamiento
+descripcionDeEntrenamiento = sagemakerCliente.describe_training_job(TrainingJobName = nombreDeEntrenamiento)
+
+#Obtenemos la ruta en donde el modelo se encuentra almacenado
+rutaDelModelo = descripcionDeEntrenamiento["ModelArtifacts"]["S3ModelArtifacts"]
+
+#Verificamos
+print(rutaDelModelo)
+
+#Utilitario para leer modelos
+from sagemaker.model import Model
+#Leemos el modelo
+modelo = Model(
+    model_data = rutaDelModelo, #Ruta del modelo
+    role = rol, #Rol de ejecución
+    image_uri = sagemaker.image_uris.retrieve(algoritmo, region), #Descargamos la implementación del algoritmo desde la región donde entrenamos
+    sagemaker_session = sesion #Sesión de SageMaker
+)
+```
+
+### Despliegue
+
+```python
+#Desplegamos el modelo
+#TIEMPO: 5 MINUTOS
+modelo.deploy(
+    initial_instance_count = cantidadInicialDeInstancias, #Cantidad de servidores
+    instance_type = tipoDeInstanciaDeEndpoint, #Tipo de servidor
+    endpoint_name = nombreDelEndpoint #Nombre del punto de acceso al modelo
+)
+```
+
+# 5. Uso del Modelo
+
+Este enfoque permite utilizar de manera eficiente un modelo de machine learning desplegado en SageMaker, facilitando la integración de predicciones en aplicaciones y flujos de trabajo de análisis de datos.
+
+## Puntos importantes a destacar:
+
+El código maneja la lectura de múltiples archivos CSV desde S3, lo que es útil para conjuntos de datos grandes.
+Se utiliza la biblioteca pandas para el manejo eficiente de los datos.
+La serialización y deserialización de datos se manejan automáticamente con las clases CSVSerializer y JSONDeserializer.
+El código está preparado para manejar grandes volúmenes de datos, realizando predicciones en lote.
+
+```python
+#Endpoint de acceso al modelo
+nombreDelEndpoint = "endpoint-numerico-XXX"
+
+#Utilitario para usar el modelo
+from sagemaker.predictor import Predictor
+
+#Utilitario para serializar el INPUT del modelo (CSV)
+from sagemaker.serializers import CSVSerializer
+
+#Utilitario para serializar el OUTPUT del modelo (JSON)
+from sagemaker.deserializers import JSONDeserializer
+
+#Creamos un predictor para el modelo desplegado
+predictor = Predictor(
+    endpoint_name = nombreDelEndpoint, #Nombre del endpoint
+    sagemaker_session = sesion, #Sesión de SageMaker
+    serializer = CSVSerializer(), #Serializador que envía los datos al modelo
+    deserializer = JSONDeserializer() #Des-serializador que extrae la respuesta del modelo
+)
+
+#Serializamos los registros
+registrosSerializados = CSVSerializer().serialize(matrizDeRegistros)
+
+#Usamos el modelo para hacer predicciones
+resultados = predictor.predict(registrosSerializados)
+
+#Verificamos los resultados
+#Notemos que como no hemos calibrado el modelo, el modelo está entregando malos resultados
+resultados
+```
+
+Este enfoque de despliegue como microservicio permite una fácil gestión, escalabilidad y mantenimiento del modelo en un entorno de producción.
+
+# 6.  Uso del Modelo de forma Remota
+Este enfoque es particularmente útil en escenarios donde se necesita integrar las predicciones del modelo en aplicaciones o servicios externos, permitiendo un acceso rápido y eficiente al modelo desplegado en SageMaker sin la necesidad de implementar toda la infraestructura de machine learning en el entorno de la aplicación.
+
+```python
+# Datos de entrada para la predicción (ajusta según tus requisitos)
+registros = [
+    [
+        19.0, #age
+        27.9, #bmi
+        0.0, #children
+        1, #sex_female
+        0, #sex_male
+        0, #region_northeast
+        0, #region_northwest
+        0, #region_southeast
+        1, #region_southwest
+        0, #smoker_no
+        1 #smoker_yes
+    ],
+    [
+        18.0, #age
+        33.770, #bmi
+        1.0, #children
+        0, #sex_female
+        1, #sex_male
+        0, #region_northeast
+        0, #region_northwest
+        1, #region_southeast
+        0, #region_southwest
+        1, #smoker_no
+        0 #smoker_yes
+    ],
+    [
+        28.0, #age
+        33.000, #bmi
+        3.0, #children
+        0, #sex_female
+        1, #sex_male
+        0, #region_northeast
+        0, #region_northwest
+        1, #region_southeast
+        0, #region_southwest
+        1, #smoker_no
+        0 #smoker_yes
+    ]
+]
+
+#Serializamos los registros
+registrosSerializados = CSVSerializer().serialize(registros)
+
+"""# 5. Uso del Modelo"""
+
+#Endpoint de acceso al modelo
+#IMPORTANTE: En "XXX" colocar la fecha de hoy, hay un bug que hace que no puedas ver tu modelo si previamente ya lo creaste y borraste
+nombreDelEndpoint = "endpoint-numerico-XXX"
+
+#Nos conectamos al cliente de ejecución remota de modelos
+sagemakerRuntime = boto3.client("sagemaker-runtime")
+
+#Nos conectamos al end-point para obtener la predicción
+respuesta = sagemakerRuntime.invoke_endpoint(
+    EndpointName = nombreDelEndpoint,
+    ContentType = "text/csv",
+    Body = registrosSerializados
+)
+
+#Extraemos la respuesta de la petición
+resultados = respuesta["Body"].read()
+
+#Verificamos los resultados de las predicciones
+resultados
+```
+Puntos importantes a destacar:
+
+Este enfoque permite utilizar el modelo de forma remota, sin necesidad de cargar el modelo completo en el entorno local.
+La serialización de datos se maneja manualmente con CSVSerializer, lo que permite un control preciso sobre el formato de los datos enviados al modelo.
+El uso de boto3 para interactuar con el endpoint de SageMaker permite una integración más directa con los servicios de AWS.
+Este método es eficiente para realizar predicciones en tiempo real o para procesar pequeños lotes de datos.
+
 
 
 
