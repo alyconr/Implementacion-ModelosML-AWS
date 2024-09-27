@@ -10,8 +10,8 @@ Este repositorio contiene la Implementación, publicación, uso y eleminacón de
 1.  [Preparación de Datos para Validación Cruzada ](#preparación-de-datos-para-validación-cruzada)
     
 2.  [Validación cruzada e hiperparametrización de un modelo de Regresión Lineal](#validación-cruzada-e-hiperparametrización-de-regresión-lineal)
-3.  [Registro de Modelos](#registro-del-modelos)
-4.  [Publicación Deployment](#publicación-*deployment)
+3.  [Registro de Modelos](#registro-de-modelos)
+4.  [Publicación Deployment](#publicación-deployment)
 5.  [Uso del Modelo](#uso-del-modelo)
 6.  [Uso del Modelo de Forma Remota](#uso-del-modelo-de-forma-remota)
     
@@ -248,7 +248,7 @@ generar_dataset_validacion_cruzada(
 )
 ```
 
-# 2. Validación cruzada e hiperparametrización de un modelo de Regresión Lineal
+# 2. Validación cruzada e hiperparametrización de un modelo de Regresión Lineal <a name="validación-cruzada-e-hiperparametrización-de-regresión-lineal"></>
 
 Inicialmente se deben entrenar cada uno de los conjuntos de datasets generados, para nuestro caso de sebe realizar el entrenamiento por separado para cada uno de los 5 conjuntos de data frames. Con la anterior se determian cual modelo tiene el menor MSE.
 
@@ -493,7 +493,7 @@ print(descripcionDeEntrenamiento["HyperParameters"]["learning_rate"])
 print(descripcionDeEntrenamiento["HyperParameters"]["l1"])
 ```
 
-# 3. Registro de Modelos
+# 3. Registro de Modelos <a name="registro-de-modelos"></a>
 
 Este proceso permite guardar y versionar el modelo entrenado, facilitando su gestión y despliegue en el futuro. El registro del modelo incluye metadatos importantes como los tipos de datos aceptados y los requisitos de infraestructura, lo que facilita su uso y mantenimiento en un entorno de producción.
 
@@ -507,7 +507,7 @@ registroDelModelo = modelo.register(
     transform_instances = tipoDeInstanciasDeEjecucion #Tipo de servidor en donde el modelo realizará cálculos intermedios
 )
 ```
-# 4. Publicacion Deployment
+# 4. Publicacion Deployment <a name="publicación-deployment"></a>
 
 Este proceso permite desplegar el modelo entrenado como un servicio web accesible a través de un endpoint. Esto facilita la integración del modelo en aplicaciones y sistemas que necesiten realizar predicciones en tiempo real.
 Puntos importantes a destacar:
@@ -561,7 +561,7 @@ modelo.deploy(
 )
 ```
 
-# 5. Uso del Modelo
+# 5. Uso del Modelo <a name="uso-del-modelo"></a>
 
 Este enfoque permite utilizar de manera eficiente un modelo de machine learning desplegado en SageMaker, facilitando la integración de predicciones en aplicaciones y flujos de trabajo de análisis de datos.
 
@@ -606,7 +606,7 @@ resultados
 
 Este enfoque de despliegue como microservicio permite una fácil gestión, escalabilidad y mantenimiento del modelo en un entorno de producción.
 
-# 6.  Uso del Modelo de forma Remota
+# 6.  Uso del Modelo de forma Remota <a name="uso-del-modelo-de-forma-remota"></a>
 Este enfoque es particularmente útil en escenarios donde se necesita integrar las predicciones del modelo en aplicaciones o servicios externos, permitiendo un acceso rápido y eficiente al modelo desplegado en SageMaker sin la necesidad de implementar toda la infraestructura de machine learning en el entorno de la aplicación.
 
 ```python
